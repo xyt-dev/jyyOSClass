@@ -1,0 +1,8 @@
+
+minimal.out：     文件格式 elf64-littleaarch64
+
+
+Disassembly of section .text:
+
+0000000000410000 <_start>:
+  410000:	14000000 	b	410000 <_start>
