@@ -1,4 +1,5 @@
 #include "../include/headers/check.h"
+#include <cctype>
 #include <cstddef>
 #include <stdio.h>
 #include <string.h>
@@ -29,9 +30,11 @@ bool containsArg(const char *args, char arg) {
     return false;
 }
 
-void freeMemory(void *p) {
-    check(p);
-    free(p);
+void freeMemory(void **p) {
+    if (p != NULL && *p != NULL) {
+        free(*p);
+        *p = NULL;
+    }
 }
 
 char *getCmdOps(int argc, char *argv[]) {
@@ -78,13 +81,41 @@ char *readFileContent(char *path) {
     }
     if (rbytes == -1) {
         printf("cannot read the file \'%s\'\n", path);
-        freeMemory(buffer);
+        freeMemory((void**)&buffer);
         close(fd);
         return NULL;
     }
 
     buffer[haveRead] = '\0';
     close(fd);
+    return buffer;
+}
+
+// no need for free, no more than 16k.
+const char *getValue(const char *content, const char *field) {
+    static char buffer[16384];
+    const char *start, *end;
+    start = strstr(content, field);
+    if (start == NULL) return NULL;
+    if (start[strlen(field)] != ':' && !isspace(start[strlen(field)])) return NULL;
+    start = strstr(start, ":");
+    if (start == NULL) return NULL;
+    start ++;
+    while(isspace(*start)) {
+        if (*start == '\n') return "";
+        start ++;
+    }
+    end = strstr(start, "\n");
+    if (end == NULL) {
+        end = strchr(start, '\0');
+    }
+
+    size_t length = end - start;
+    if (end - start >= sizeof(buffer)) {
+        length = sizeof(buffer) - 1;
+    }
+    strncpy(buffer, start, length);
+    buffer[length] = '\0';
     return buffer;
 }
 
@@ -95,7 +126,6 @@ void setPidInfos() {
     int pid = 0, pids_count = 0;
     struct dirent *entry;
     while ((entry = readdir(dirp)) != NULL) {
-
         if ((pid = atoi(entry->d_name)) == 0) {
             continue;
         }
@@ -110,11 +140,11 @@ void setPidInfos() {
         printf("Read from file \'%s\'\n", procStatusFilePath);
         printf("d_ino: %ld d_off: %ld d_type: %d d_reclen: %d d_name: %s\n",\
             entry->d_ino, entry->d_off, entry->d_type, entry->d_reclen, entry->d_name);
-        printf("Content: \n%s\n", content);
+        // printf("Content: \n%s\n", content);
+        printf("Name: %s\n", getValue(content, "Name"));
         pids_count ++;
     }
 }
-
 
 int main(int argc, char *argv[]) {
     pidInfos = (PidInfo *)malloc(sizeof(PidInfo) * MAX_PID_N);
@@ -127,6 +157,7 @@ int main(int argc, char *argv[]) {
         setPidInfos();
     }
 
-    freeMemory(pidInfos);
-    freeMemory(args);
+    freeMemory((void**)&pidInfos);
+    freeMemory((void**)&args);
+    return 0;
 }
