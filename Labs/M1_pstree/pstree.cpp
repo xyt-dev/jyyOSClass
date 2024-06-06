@@ -14,6 +14,7 @@
 #define MAX_ARGS_N 10
 #define HASH_TABLE_SIZE 32768
 #define MAX_CHILDREN_N 65536
+#define MAX_LEADING_CHAR_N 1024
 
 typedef struct PidInfo {
     char name[MAX_FILENAME_L];
@@ -218,7 +219,7 @@ void fillPidInfos() {
     buildRelas();
 }
 
-void _printTree(PidInfo *pidInfo, int spaces) {
+void _printTree(PidInfo *pidInfo, const char *leadingStr) {
     if (pidInfo == NULL) {
         printf("cannot get systemd.\n");
     }
@@ -230,22 +231,32 @@ void _printTree(PidInfo *pidInfo, int spaces) {
     }
     if (nchild == 1) printf("\u2500\u2500\u2500");
     else printf("\u2500\u252C\u2500");
-    _printTree(getPidInfo(pidInfo->children[0]), spaces + strlen(pidInfo->name) + 3);
+    char nextLeadingStr[MAX_LEADING_CHAR_N];
+    strcpy(nextLeadingStr, leadingStr);
+    int start = strlen(nextLeadingStr), end = strlen(nextLeadingStr) + strlen(pidInfo->name);
+    for (int k = start; k < MAX_LEADING_CHAR_N && k < end; k ++) nextLeadingStr[k] = ' ';
+    strcat(&nextLeadingStr[end], " \u2502 ");
+    _printTree(getPidInfo(pidInfo->children[0]), nextLeadingStr);
 
     for (int i = 1; i < nchild; i ++) {
-        for (int i = 0; i < spaces + strlen(pidInfo->name); i ++) putchar(' ');
+        char _leadingStr[MAX_LEADING_CHAR_N];
+        strcpy(_leadingStr, leadingStr);
+        int start = strlen(_leadingStr), end = strlen(_leadingStr) + strlen(pidInfo->name);
+        for (int k = start; k < MAX_LEADING_CHAR_N && k < end; k ++) _leadingStr[k] = ' ';
+        _leadingStr[end] = '\0'; // note
+        printf("%s", _leadingStr);
         if (i == nchild - 1) {
             printf(" \u2514\u2500");
         } else {
             printf(" \u251C\u2500");
         }
-        _printTree(getPidInfo(pidInfo->children[i]), spaces + strlen(pidInfo->name) + 3);
+        _printTree(getPidInfo(pidInfo->children[i]), nextLeadingStr);
     }
 }
 
 void printTree() {
     PidInfo *root = getPidInfo(1);
-    _printTree(root, 0);
+    _printTree(root, "");
 }
 
 int main(int argc, char *argv[]) {
