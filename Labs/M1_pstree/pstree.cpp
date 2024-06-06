@@ -1,6 +1,7 @@
 #include "../include/headers/check.h"
 #include <cctype>
 #include <cstddef>
+#include <cstdlib>
 #include <stdio.h>
 #include <string.h>
 #include <dirent.h>
@@ -9,9 +10,9 @@
 #include <unistd.h>
 
 #define MAX_FILENAME_L 256
-#define MAX_PID_N 10000
 #define MAX_CONTENT_L 10000
 #define MAX_ARGS_N 10
+#define HASH_TABLE_SIZE 32768
 
 typedef struct PidInfo {
     char name[MAX_FILENAME_L];
@@ -19,7 +20,65 @@ typedef struct PidInfo {
     __pid_t ppid;
 } PidInfo;
 
-PidInfo *pidInfos = nullptr;
+typedef struct HashNode {
+    int key;
+    PidInfo *value;
+    struct HashNode *next;
+} HashNode;
+
+HashNode *pidTable[HASH_TABLE_SIZE];
+
+unsigned int hash(int key) {
+    return key % HASH_TABLE_SIZE;
+}
+
+void addPidInfo(int pid, PidInfo *pidInfo) {
+    int index = hash(pid);
+    HashNode *newNode = (HashNode *)malloc(sizeof(HashNode));
+    newNode->key = pid;
+    newNode->value = pidInfo;
+    newNode->next = pidTable[index];
+    pidTable[index] = newNode;
+}
+
+PidInfo *getPidInfo(int pid) {
+    unsigned int index = hash(pid);
+    HashNode *currentNode = pidTable[index];
+    while (currentNode != NULL) {
+        if (currentNode->key == pid) {
+            return currentNode->value;
+        }
+        currentNode = currentNode->next;
+    }
+    return NULL;
+}
+
+void freeMemory(void **p) {
+    if (p != NULL && *p != NULL) {
+        free(*p);
+        *p = NULL;
+    }
+}
+
+void removePidInfo(int pid) {
+    unsigned int index = hash(pid);
+    HashNode *currentNode = pidTable[index];
+    HashNode *prevNode = NULL;
+    while (currentNode != NULL) {
+        if (currentNode->key == pid) {
+            if (prevNode == NULL) {
+                pidTable[index] = currentNode->next;
+            } else {
+                prevNode->next = currentNode->next;
+            }
+            freeMemory((void**)&currentNode->value);
+            freeMemory((void**)&currentNode);
+            return;
+        }
+        prevNode = currentNode;
+        currentNode = currentNode->next;
+    }
+}
 
 bool containsArg(const char *args, char arg) {
     for (int i = 0; i < strlen(args); i ++) {
@@ -28,13 +87,6 @@ bool containsArg(const char *args, char arg) {
         }
     }
     return false;
-}
-
-void freeMemory(void **p) {
-    if (p != NULL && *p != NULL) {
-        free(*p);
-        *p = NULL;
-    }
 }
 
 char *getCmdOps(int argc, char *argv[]) {
@@ -92,7 +144,8 @@ char *readFileContent(char *path) {
 }
 
 // no need for free, no more than 16k.
-const char *getValue(const char *content, const char *field) {
+// using strcpy
+const char *getContentField(const char *content, const char *field) {
     static char buffer[16384];
     const char *start, *end;
     start = strstr(content, field);
@@ -119,45 +172,51 @@ const char *getValue(const char *content, const char *field) {
     return buffer;
 }
 
-void setPidInfos() {
-    check(pidInfos);
+void fillPidInfos() {
     DIR *dirp = opendir("/proc");
     check(dirp);
-    int pid = 0, pids_count = 0;
+    int pid = 0;
     struct dirent *entry;
     while ((entry = readdir(dirp)) != NULL) {
         if ((pid = atoi(entry->d_name)) == 0) {
             continue;
         }
-        pidInfos[pids_count].pid = pid;
-
+        // printf("d_ino: %ld d_off: %ld d_type: %d d_reclen: %d d_name: %s\n", entry->d_ino, entry->d_off, entry->d_type, entry->d_reclen, entry->d_name);
         char procStatusFilePath[MAX_FILENAME_L] = "/proc/"; 
         strcat(procStatusFilePath, entry->d_name);
         strcat(procStatusFilePath, "/status");
         int fileFd = open(procStatusFilePath, O_RDONLY);
         check(fileFd != -1);
         const char *content = readFileContent(procStatusFilePath);
-        printf("Read from file \'%s\'\n", procStatusFilePath);
-        printf("d_ino: %ld d_off: %ld d_type: %d d_reclen: %d d_name: %s\n",\
-            entry->d_ino, entry->d_off, entry->d_type, entry->d_reclen, entry->d_name);
-        // printf("Content: \n%s\n", content);
-        printf("Name: %s\n", getValue(content, "Name"));
-        pids_count ++;
+        PidInfo *newPidInfo = (PidInfo *)malloc(sizeof(PidInfo));
+        strcpy(newPidInfo->name, getContentField(content, "Name"));
+        newPidInfo->pid = pid;
+        newPidInfo->ppid = atoi(getContentField(content, "PPid"));
+        addPidInfo(pid, newPidInfo);
+    }
+}
+
+void printTree() {
+    for (int i = 0; i < HASH_TABLE_SIZE; i ++) {
+        HashNode *current = pidTable[i];
+        while (current != NULL) {
+            PidInfo *pidInfo = current->value;
+            printf("Name: %s  Pid: %d  PPid: %d\n", pidInfo->name, pidInfo->pid, pidInfo->ppid);
+            current = current->next;
+        }
     }
 }
 
 int main(int argc, char *argv[]) {
-    pidInfos = (PidInfo *)malloc(sizeof(PidInfo) * MAX_PID_N);
-    check(pidInfos);
     char *args = getCmdOps(argc, argv);
     if (containsArg(args, 'v')) {
         printf("pstree v1.0\n");
     }
     if (containsArg(args, 'p')) {
-        setPidInfos();
+        fillPidInfos();
     }
+    printTree();
 
-    freeMemory((void**)&pidInfos);
     freeMemory((void**)&args);
     return 0;
 }
