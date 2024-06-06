@@ -13,11 +13,15 @@
 #define MAX_CONTENT_L 10000
 #define MAX_ARGS_N 10
 #define HASH_TABLE_SIZE 32768
+#define MAX_CHILDREN_N 65536
 
 typedef struct PidInfo {
     char name[MAX_FILENAME_L];
     __pid_t pid;
     __pid_t ppid;
+    __pid_t children[MAX_CHILDREN_N];
+    int nchild;
+
 } PidInfo;
 
 typedef struct HashNode {
@@ -172,6 +176,22 @@ const char *getContentField(const char *content, const char *field) {
     return buffer;
 }
 
+void buildRelas() {
+    for (int i = 0; i < HASH_TABLE_SIZE; i ++) {
+        HashNode *current = pidTable[i];
+        while (current != NULL) {
+            PidInfo *pidInfo = current->value;
+            int pid = pidInfo->pid;
+            int ppid = pidInfo->ppid;
+            if (ppid != 0) {
+                pidInfo = getPidInfo(ppid);
+                pidInfo->children[pidInfo->nchild ++] = pid;
+            }
+            current = current->next;
+        }
+    }
+}
+
 void fillPidInfos() {
     DIR *dirp = opendir("/proc");
     check(dirp);
@@ -192,19 +212,40 @@ void fillPidInfos() {
         strcpy(newPidInfo->name, getContentField(content, "Name"));
         newPidInfo->pid = pid;
         newPidInfo->ppid = atoi(getContentField(content, "PPid"));
+        newPidInfo->nchild = 0; // init
         addPidInfo(pid, newPidInfo);
+    }
+    buildRelas();
+}
+
+void _printTree(PidInfo *pidInfo, int spaces) {
+    if (pidInfo == NULL) {
+        printf("cannot get systemd.\n");
+    }
+    printf("%s", pidInfo->name);
+    int nchild = pidInfo->nchild;
+    if (nchild == 0) {
+        printf("\n");
+        return;
+    }
+    if (nchild == 1) printf("\u2500\u2500\u2500");
+    else printf("\u2500\u252C\u2500");
+    _printTree(getPidInfo(pidInfo->children[0]), spaces + strlen(pidInfo->name) + 3);
+
+    for (int i = 1; i < nchild; i ++) {
+        for (int i = 0; i < spaces + strlen(pidInfo->name); i ++) putchar(' ');
+        if (i == nchild - 1) {
+            printf(" \u2514\u2500");
+        } else {
+            printf(" \u251C\u2500");
+        }
+        _printTree(getPidInfo(pidInfo->children[i]), spaces + strlen(pidInfo->name) + 3);
     }
 }
 
 void printTree() {
-    for (int i = 0; i < HASH_TABLE_SIZE; i ++) {
-        HashNode *current = pidTable[i];
-        while (current != NULL) {
-            PidInfo *pidInfo = current->value;
-            printf("Name: %s  Pid: %d  PPid: %d\n", pidInfo->name, pidInfo->pid, pidInfo->ppid);
-            current = current->next;
-        }
-    }
+    PidInfo *root = getPidInfo(1);
+    _printTree(root, 0);
 }
 
 int main(int argc, char *argv[]) {
