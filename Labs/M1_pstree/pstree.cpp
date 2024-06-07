@@ -219,11 +219,15 @@ void fillPidInfos() {
     buildRelas();
 }
 
-void _printTree(PidInfo *pidInfo, const char *leadingStr) {
+void _printTree(PidInfo *pidInfo, const char *leadingStr, const char mode) {
     if (pidInfo == NULL) {
         printf("cannot get systemd.\n");
     }
-    printf("%s", pidInfo->name);
+    if (mode == 'p') {
+        printf("%s(pid:%d)", pidInfo->name, pidInfo->pid);
+    } else {
+        printf("%s", pidInfo->name);
+    }
     int nchild = pidInfo->nchild;
     if (nchild == 0) {
         printf("\n");
@@ -234,14 +238,24 @@ void _printTree(PidInfo *pidInfo, const char *leadingStr) {
     char nextLeadingStr[MAX_LEADING_CHAR_N];
     strcpy(nextLeadingStr, leadingStr);
     int start = strlen(nextLeadingStr), end = strlen(nextLeadingStr) + strlen(pidInfo->name);
+    if (mode == 'p') {
+        char spid[20];
+        sprintf(spid, "%d", pidInfo->pid);
+        end += strlen(spid) + 6;
+    }
     for (int k = start; k < MAX_LEADING_CHAR_N && k < end; k ++) nextLeadingStr[k] = ' ';
     strcat(&nextLeadingStr[end], " \u2502 ");
-    _printTree(getPidInfo(pidInfo->children[0]), nextLeadingStr);
+    _printTree(getPidInfo(pidInfo->children[0]), nextLeadingStr, mode);
 
     for (int i = 1; i < nchild; i ++) {
         char _leadingStr[MAX_LEADING_CHAR_N];
         strcpy(_leadingStr, leadingStr);
         int start = strlen(_leadingStr), end = strlen(_leadingStr) + strlen(pidInfo->name);
+        if (mode == 'p') {
+            char spid[20];
+            sprintf(spid, "%d", pidInfo->pid);
+            end += strlen(spid) + 6;
+        }
         for (int k = start; k < MAX_LEADING_CHAR_N && k < end; k ++) _leadingStr[k] = ' ';
         _leadingStr[end] = '\0'; // note
         printf("%s", _leadingStr);
@@ -250,25 +264,27 @@ void _printTree(PidInfo *pidInfo, const char *leadingStr) {
         } else {
             printf(" \u251C\u2500");
         }
-        _printTree(getPidInfo(pidInfo->children[i]), nextLeadingStr);
+        _printTree(getPidInfo(pidInfo->children[i]), nextLeadingStr, mode);
     }
 }
 
-void printTree() {
+void printTree(const char mode) {
     PidInfo *root = getPidInfo(1);
-    _printTree(root, "");
+    _printTree(root, "", mode);
 }
 
 int main(int argc, char *argv[]) {
     char *args = getCmdOps(argc, argv);
     if (containsArg(args, 'v')) {
         printf("pstree v1.0\n");
+        return 0;
     }
+    fillPidInfos();
     if (containsArg(args, 'p')) {
-        fillPidInfos();
+        printTree('p');
+    } else {
+        printTree('n');
     }
-    printTree();
-
     freeMemory((void**)&args);
     return 0;
 }
