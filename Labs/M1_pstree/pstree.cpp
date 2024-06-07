@@ -244,7 +244,9 @@ void _printTree(PidInfo *pidInfo, const char *leadingStr, const char mode) {
         end += strlen(spid) + 6;
     }
     for (int k = start; k < MAX_LEADING_CHAR_N && k < end; k ++) nextLeadingStr[k] = ' ';
-    strcat(&nextLeadingStr[end], " \u2502 ");
+    nextLeadingStr[end] = '\0'; // note
+    if (nchild == 1) strcat(nextLeadingStr, "   ");
+    else strcat(nextLeadingStr, " \u2502 ");
     _printTree(getPidInfo(pidInfo->children[0]), nextLeadingStr, mode);
 
     for (int i = 1; i < nchild; i ++) {
@@ -261,6 +263,8 @@ void _printTree(PidInfo *pidInfo, const char *leadingStr, const char mode) {
         printf("%s", _leadingStr);
         if (i == nchild - 1) {
             printf(" \u2514\u2500");
+            nextLeadingStr[end] = '\0'; // note
+            strcat(nextLeadingStr, "   ");
         } else {
             printf(" \u251C\u2500");
         }
