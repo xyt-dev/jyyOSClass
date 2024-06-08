@@ -1,0 +1,37 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-gcc",
+      "-std=gnu11",
+      "-O2",
+      "-Wall",
+      "-I/home/xy6/CodeDesktop/jyyOSClass/Labs/L0/abstract-machine/test/include",
+      "-I/home/xy6/CodeDesktop/jyyOSClass/Labs/L0/abstract-machine/am/include/",
+      "-I/home/xy6/CodeDesktop/jyyOSClass/Labs/L0/abstract-machine/klib/include/",
+      "-D__ISA__=\"x86\"",
+      "-D__ISA_X86__",
+      "-D__ARCH__=x86-qemu",
+      "-D__ARCH_X86_QEMU",
+      "-D__PLATFORM__=qemu",
+      "-D__PLATFORM_QEMU",
+      "-DARCH_H=\"arch/x86-qemu.h\"",
+      "-fno-asynchronous-unwind-tables",
+      "-fno-builtin",
+      "-fno-stack-protector",
+      "-Wno-main",
+      "-U_FORTIFY_SOURCE",
+      "-m32",
+      "-fno-pic",
+      "-fno-omit-frame-pointer",
+      "-march=i386",
+      "-fcf-protection=none",
+      "-c",
+      "-o",
+      "/home/xy6/CodeDesktop/jyyOSClass/Labs/L0/abstract-machine/test/build/x86-qemu/hello.o",
+      "/home/xy6/CodeDesktop/jyyOSClass/Labs/L0/abstract-machine/test/hello.c"
+    ],
+    "directory": "/home/xy6/CodeDesktop/jyyOSClass/Labs/L0/abstract-machine/test",
+    "file": "/home/xy6/CodeDesktop/jyyOSClass/Labs/L0/abstract-machine/test/hello.c",
+    "output": "/home/xy6/CodeDesktop/jyyOSClass/Labs/L0/abstract-machine/test/build/x86-qemu/hello.o"
+  }
+]
