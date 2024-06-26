@@ -3,7 +3,7 @@
 volatile long sum = 0;
 volatile int A = 0, B = 0;
 volatile int turn = 0;
-const long N = 10000000000;
+const long N = 10000000;
 
 void TA() {
     for (long i = 0; i < N; i ++) {

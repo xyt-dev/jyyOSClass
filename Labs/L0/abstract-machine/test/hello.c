@@ -1,5 +1,6 @@
 #include <am.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 void print(const char *s, ...) {
     va_list ap;
@@ -11,9 +12,17 @@ void print(const char *s, ...) {
     va_end(ap);
 }
 
+void putInt(int num) {
+    putch('0');
+    putch('x');
+    for (int i = 31; i >= 0; i --) {
+        putch(((num >> i) & 1) + '0');
+    }
+    putch('\n');
+}
+
 
 int main() {
-    for (int i = 0; i < 100; i ++) 
-        print("\"", "Hello Wow", "\"", " from " __ISA__ " program!\n", NULL);
+    putInt(666);
     return 0;
 }

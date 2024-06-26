@@ -25,7 +25,6 @@ int main() {
     for (int i = 1; i <= 3; i ++) {
         create((void *)Tprobe);
     }
-    // create((void *)Tprobe);
     join();
     return 0;
 }
