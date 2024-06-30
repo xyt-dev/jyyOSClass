@@ -1,4 +1,3 @@
-#include "thread.h"
 #include <cassert>
 #include <iostream>
 #include <linux/futex.h>

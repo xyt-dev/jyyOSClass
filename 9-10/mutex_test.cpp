@@ -1,4 +1,5 @@
 #include "mutex.h"
+#include "thread.h"
 #include <ctime>
 
 Mutex mutex;
