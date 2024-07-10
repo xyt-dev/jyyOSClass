@@ -5,9 +5,9 @@
       "-std=gnu11",
       "-O2",
       "-Wall",
-      "-I/home/xy6/CodeDesktop/jyyOSClass/Labs/L0/abstract-machine/test/include",
-      "-I/home/xy6/CodeDesktop/jyyOSClass/Labs/L0/abstract-machine/am/include/",
-      "-I/home/xy6/CodeDesktop/jyyOSClass/Labs/L0/abstract-machine/klib/include/",
+      "-I/home/xy6/CodeSpace/jyyOSClass/Labs/L0/abstract-machine/test/include",
+      "-I/home/xy6/CodeSpace/jyyOSClass/Labs/L0/abstract-machine/am/include/",
+      "-I/home/xy6/CodeSpace/jyyOSClass/Labs/L0/abstract-machine/klib/include/",
       "-D__ISA__=\"x86\"",
       "-D__ISA_X86__",
       "-D__ARCH__=x86-qemu",
@@ -27,11 +27,11 @@
       "-fcf-protection=none",
       "-c",
       "-o",
-      "/home/xy6/CodeDesktop/jyyOSClass/Labs/L0/abstract-machine/test/build/x86-qemu/hello.o",
-      "/home/xy6/CodeDesktop/jyyOSClass/Labs/L0/abstract-machine/test/hello.c"
+      "/home/xy6/CodeSpace/jyyOSClass/Labs/L0/abstract-machine/test/build/x86-qemu/hello.o",
+      "/home/xy6/CodeSpace/jyyOSClass/Labs/L0/abstract-machine/test/hello.c"
     ],
-    "directory": "/home/xy6/CodeDesktop/jyyOSClass/Labs/L0/abstract-machine/test",
-    "file": "/home/xy6/CodeDesktop/jyyOSClass/Labs/L0/abstract-machine/test/hello.c",
-    "output": "/home/xy6/CodeDesktop/jyyOSClass/Labs/L0/abstract-machine/test/build/x86-qemu/hello.o"
+    "directory": "/home/xy6/CodeSpace/jyyOSClass/Labs/L0/abstract-machine/test",
+    "file": "/home/xy6/CodeSpace/jyyOSClass/Labs/L0/abstract-machine/test/hello.c",
+    "output": "/home/xy6/CodeSpace/jyyOSClass/Labs/L0/abstract-machine/test/build/x86-qemu/hello.o"
   }
 ]

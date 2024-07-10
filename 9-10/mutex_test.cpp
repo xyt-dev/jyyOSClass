@@ -5,6 +5,17 @@
 Mutex mutex;
 
 void basicTest() {
+  {
+    int a = 123;
+    int ret = cmpxchg(&a, 0, 1);
+    assert(ret == 123);
+    ret =cmpxchg(&a, 123, 1);
+    assert(ret == 123);
+    ret =cmpxchg(&a, 1, 123);
+    assert(ret == 1);
+    ret =cmpxchg(&a, 1, 123);
+    assert(ret == 123);
+  }
   Mutex mutex1;
   mutex1.lock();
   mutex1.unlock();
@@ -28,7 +39,7 @@ void basicTest() {
 volatile int sum = 0;
 
 void T() {
-  for (int j = 0; j < 100000000; j++) {
+  for (int j = 0; j < 10000000; j++) {
     mutex.lock();
     sum++;
     mutex.unlock();
