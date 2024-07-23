@@ -1,6 +1,9 @@
 #include "mutex.h"
 #include "thread.h"
+#include <cassert>
 #include <ctime>
+#include <pthread.h>
+#include <utility>
 
 Mutex mutex;
 
@@ -9,11 +12,11 @@ void basicTest() {
     int a = 123;
     int ret = cmpxchg(&a, 0, 1);
     assert(ret == 123);
-    ret =cmpxchg(&a, 123, 1);
+    ret = cmpxchg(&a, 123, 1);
     assert(ret == 123);
-    ret =cmpxchg(&a, 1, 123);
+    ret = cmpxchg(&a, 1, 123);
     assert(ret == 1);
-    ret =cmpxchg(&a, 1, 123);
+    ret = cmpxchg(&a, 1, 123);
     assert(ret == 123);
   }
   Mutex mutex1;

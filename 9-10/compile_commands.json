@@ -1,0 +1,22 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-c",
+      "-o",
+      "mutex_test",
+      "mutex_test.cpp"
+    ],
+    "directory": "/home/xy6/CodeSpace/jyyOSClass/9-10",
+    "file": "/home/xy6/CodeSpace/jyyOSClass/9-10/mutex_test.cpp",
+    "output": "/home/xy6/CodeSpace/jyyOSClass/9-10/mutex_test"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "semaphore_test.cpp"
+    ],
+    "directory": "/home/xy6/CodeSpace/jyyOSClass/9-10",
+    "file": "/home/xy6/CodeSpace/jyyOSClass/9-10/semaphore_test.cpp",
+  },
+]
